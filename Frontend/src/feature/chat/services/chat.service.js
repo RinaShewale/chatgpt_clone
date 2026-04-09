@@ -1,5 +1,5 @@
 export const initializeSocketConnection = () => {
-    const socket = io("https://perplexity-58ov.onrender.com", {
+    const socket = io("https://chatgpt-clone-jffg.onrender.com", {
         withCredentials: true // ✅ FIXED
     });
 

@@ -36,7 +36,7 @@ export async function register(req, res) {
     await user.save();
 
     // 4. Create verification link
-    const verificationLink = `http://localhost:5173/verify-email?token=${emailVerificationToken}`;
+    const verificationLink = `https://chatgpt-clone-jffg.onrender.com//verify-email?token=${emailVerificationToken}`;
 
     // send email...
     // send email
@@ -344,7 +344,7 @@ export const forgotPassword = async (req, res) => {
     await user.save();
 
     // 3. Send Email
-    const resetUrl = `http://localhost:5173/login`; // Or your specific reset page
+    const resetUrl = `https://chatgpt-clone-jffg.onrender.com/login`; // Or your specific reset page
     const htmlContent = `
             <div style="font-family: sans-serif; padding: 20px; color: #333;">
                 <h2>Password Reset Request</h2>

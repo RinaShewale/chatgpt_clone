@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: "https://perplexity-58ov.onrender.com",
+    baseURL: "https://chatgpt-clone-jffg.onrender.com",
     withCredentials: true
 });
 
