@@ -36,7 +36,7 @@ export async function register(req, res) {
     await user.save();
 
     // 4. Create verification link
-    const verificationLink = `https://chatgpt-clone-jffg.onrender.com//verify-email?token=${emailVerificationToken}`;
+    const verificationLink = `https://chatgpt-clone-jffg.onrender.com/verify-email?token=${emailVerificationToken}`;
 
     // send email...
     // send email
