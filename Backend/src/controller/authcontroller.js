@@ -98,13 +98,13 @@ export async function login(req, res) {
       });
     }
 
-    // check email verified
-    if (!user.verified) {
-      return res.status(400).json({
-        message: "Please verify your email first",
-        success: false,
-      });
-    }
+    // ❌ REMOVE EMAIL VERIFICATION BLOCK (IMPORTANT)
+    // if (!user.verified) {
+    //   return res.status(400).json({
+    //     message: "Please verify your email first",
+    //     success: false,
+    //   });
+    // }
 
     const isMatch = await user.comparePassword(password);
 
@@ -121,29 +121,31 @@ export async function login(req, res) {
       { expiresIn: "1d" }
     );
 
+    // ✅ FIX COOKIE FOR RENDER
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,
-      sameSite: "strict",
+      secure: true,        // 🔥 REQUIRED
+      sameSite: "none",    // 🔥 REQUIRED
     });
 
     const userData = user.toObject();
     delete userData.password;
 
-    return res.json({
+    return res.status(200).json({
       message: "Login successful",
       success: true,
       user: userData,
     });
 
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       message: "Login failed",
       success: false,
       error: error.message,
     });
   }
 }
+
 
 
 // ================= GET CURRENT USER =================

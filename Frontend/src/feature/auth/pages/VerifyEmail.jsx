@@ -30,7 +30,7 @@ const VerifyEmail = () => {
       try {
         // Ensure this matches your backend PORT
         const response = await axios.get(
-          `https://perplexity-58ov.onrender.com/api/auth/verify-email?token=${token}`
+          `https://chatgpt-clone-jffg.onrender.com/api/auth/verify-email?token=${token}`
         );
 
         if (response.data.success) {
