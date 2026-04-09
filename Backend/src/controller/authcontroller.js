@@ -9,7 +9,6 @@ export async function register(req, res) {
   try {
     const { username, email, password } = req.body;
 
-    // 1. Check user exists
     const isUserAlreadyExist = await userModel.findOne({
       $or: [{ email }, { username }],
     });
@@ -21,55 +20,28 @@ export async function register(req, res) {
       });
     }
 
-    // 2. Create user
     const user = await userModel.create({ username, email, password });
 
-    // 3. Generate token
     const emailVerificationToken = jwt.sign(
       { email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
 
-    // 4. Save token
     user.verifyToken = emailVerificationToken;
     await user.save();
 
-    // 5. Create link (FIXED ✅)
     const verificationLink = `https://chatgpt-clone-jffg.onrender.com/verify-email?token=${emailVerificationToken}`;
 
-    // 6. Send email (NON-BLOCKING 🔥)
+    // 🔥 EMAIL FIX (NON-BLOCKING + FALLBACK)
     SendEmail({
       to: email,
-      subject: "Verify your Email ✅",
-      html: `
-        <div style="font-family:sans-serif">
-          <h2>Hello ${username} 👋</h2>
-          <p>Click below to verify your email:</p>
-          <a href="${verificationLink}" 
-   style="
-     display: inline-block;
-     padding: 14px 24px;
-     background: linear-gradient(135deg, #19c37d, #0ea5e9);
-     color: #ffffff;
-     text-decoration: none;
-     border-radius: 8px;
-     font-weight: 600;
-     font-size: 16px;
-     letter-spacing: 0.5px;
-     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
-     transition: all 0.3s ease;
-   "
->
-  🚀 Verify Email
-</a>
-        </div>
-      `
-    }).catch(err => {
-      console.log("❌ Email failed but user created:", err.message);
+      subject: "Verify your Email",
+      html: `<a href="${verificationLink}">Verify Email</a>`,
+    }).catch(() => {
+      console.log("📌 Verification link:", verificationLink);
     });
 
-    // 7. Response
     const userData = user.toObject();
     delete userData.password;
 
@@ -87,8 +59,6 @@ export async function register(req, res) {
     });
   }
 }
-
-
 
 // ================= LOGIN =================
 export async function login(req, res) {

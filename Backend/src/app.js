@@ -21,7 +21,7 @@ app.use(morgan("dev"))
 
 app.use(
   cors({
-    origin: true,
+    origin: "https://chatgpt-clone-jffg.onrender.com",
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   })
