@@ -5,11 +5,11 @@ import crypto from "crypto";
 
 
 // ================= REGISTER =================
-// ================= REGISTER =================
 export async function register(req, res) {
   try {
     const { username, email, password } = req.body;
 
+    // 1. Check user exists
     const isUserAlreadyExist = await userModel.findOne({
       $or: [{ email }, { username }],
     });
@@ -21,64 +21,54 @@ export async function register(req, res) {
       });
     }
 
-    // 1. Create the user
+    // 2. Create user
     const user = await userModel.create({ username, email, password });
 
-    // 2. Generate email verification token
+    // 3. Generate token
     const emailVerificationToken = jwt.sign(
       { email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
 
-    // 3. SAVE the token to the user record in DB <--- THIS WAS MISSING
+    // 4. Save token
     user.verifyToken = emailVerificationToken;
     await user.save();
 
-    // 4. Create verification link
+    // 5. Create link (FIXED ✅)
     const verificationLink = `https://chatgpt-clone-jffg.onrender.com/verify-email?token=${emailVerificationToken}`;
 
-    // send email...
-    // send email
-    await SendEmail({
+    // 6. Send email (NON-BLOCKING 🔥)
+    SendEmail({
       to: email,
       subject: "Verify your Email ✅",
       html: `
-        <div style="font-family: sans-serif; color: #333; line-height: 1.6;">
-          <h2 style="font-size: 24px;">Hello ${username} 👋</h2>
-          
-          <p>Your account has been created successfully.</p>
-          <p>Please verify your email by clicking the button below.</p>
-
-          <div style="margin: 25px 0;">
-            <a href="${verificationLink}" 
-               style="background-color: #4CAF50; 
-                      color: white; 
-                      padding: 12px 20px; 
-                      text-decoration: none; 
-                      border-radius: 5px; 
-                      font-weight: 500; 
-                      display: inline-block;">
-               Verify Email
-            </a>
-          </div>
-
-          <p style="color: #555;">If you did not create this account, please ignore this email.</p>
+        <div style="font-family:sans-serif">
+          <h2>Hello ${username} 👋</h2>
+          <p>Click below to verify your email:</p>
+          <a href="${verificationLink}">Verify Email</a>
         </div>
-      `,
+      `
+    }).catch(err => {
+      console.log("❌ Email failed but user created:", err.message);
     });
 
+    // 7. Response
     const userData = user.toObject();
     delete userData.password;
 
     return res.status(201).json({
-      message: "User registered successfully. Please verify your email.",
+      message: "User registered successfully",
       success: true,
       user: userData,
     });
 
   } catch (error) {
-    // ... error handling
+    console.log("REGISTER ERROR:", error);
+    return res.status(500).json({
+      message: "Register failed",
+      success: false,
+    });
   }
 }
 
