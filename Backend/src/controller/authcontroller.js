@@ -5,60 +5,55 @@ import crypto from "crypto";
 
 
 // ================= REGISTER =================
-export async function register(req, res) {
-  try {
-    const { username, email, password } = req.body;
+SendEmail({
+  to: email,
+  subject: "🚀 Verify Your Email - Welcome!",
+  html: `
+    <div style="font-family: 'Segoe UI', sans-serif; background-color:#f4f6f8; padding:40px 20px;">
+      
+      <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:12px; padding:30px; box-shadow:0 8px 24px rgba(0,0,0,0.1); text-align:center;">
+        
+        <h2 style="color:#111; margin-bottom:10px;">Welcome 🎉</h2>
+        
+        <p style="color:#555; font-size:15px; line-height:1.6;">
+          Your account has been created successfully.<br/>
+          Please verify your email to activate your account.
+        </p>
 
-    const isUserAlreadyExist = await userModel.findOne({
-      $or: [{ email }, { username }],
-    });
+        <a href="${verificationLink}" 
+           style="
+             display:inline-block;
+             margin-top:20px;
+             padding:14px 26px;
+             font-size:16px;
+             font-weight:600;
+             color:#fff;
+             text-decoration:none;
+             border-radius:8px;
+             background:linear-gradient(135deg,#19c37d,#0ea5e9);
+             box-shadow:0 4px 12px rgba(0,0,0,0.2);
+           ">
+           ✅ Verify Email
+        </a>
 
-    if (isUserAlreadyExist) {
-      return res.status(400).json({
-        message: "User with this Email or Username already exists",
-        success: false,
-      });
-    }
+        <p style="margin-top:25px; font-size:13px; color:#777;">
+          Or copy & paste this link in your browser:
+        </p>
 
-    const user = await userModel.create({ username, email, password });
+        <p style="word-break:break-all; font-size:12px; color:#444; background:#f1f1f1; padding:10px; border-radius:6px;">
+          ${verificationLink}
+        </p>
 
-    const emailVerificationToken = jwt.sign(
-      { email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
+        <p style="margin-top:20px; font-size:12px; color:#999;">
+          If you didn't create this account, you can safely ignore this email.
+        </p>
 
-    user.verifyToken = emailVerificationToken;
-    await user.save();
-
-    const verificationLink = `https://chatgpt-clone-jffg.onrender.com/verify-email?token=${emailVerificationToken}`;
-
-    // 🔥 EMAIL FIX (NON-BLOCKING + FALLBACK)
-    SendEmail({
-      to: email,
-      subject: "Verify your Email",
-      html: `<a href="${verificationLink}">Verify Email</a>`,
-    }).catch(() => {
-      console.log("📌 Verification link:", verificationLink);
-    });
-
-    const userData = user.toObject();
-    delete userData.password;
-
-    return res.status(201).json({
-      message: "User registered successfully",
-      success: true,
-      user: userData,
-    });
-
-  } catch (error) {
-    console.log("REGISTER ERROR:", error);
-    return res.status(500).json({
-      message: "Register failed",
-      success: false,
-    });
-  }
-}
+      </div>
+    </div>
+  `
+}).catch(() => {
+  console.log("📌 Verification link:", verificationLink);
+});
 
 // ================= LOGIN =================
 export async function login(req, res) {
