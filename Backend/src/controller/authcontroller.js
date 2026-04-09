@@ -5,10 +5,39 @@ import crypto from "crypto";
 
 
 // ================= REGISTER =================
-SendEmail({
-  to: email,
-  subject: "🚀 Verify Your Email - Welcome!",
-  html: `
+export async function register(req, res) {
+  try {
+    const { username, email, password } = req.body;
+
+    const isUserAlreadyExist = await userModel.findOne({
+      $or: [{ email }, { username }],
+    });
+
+    if (isUserAlreadyExist) {
+      return res.status(400).json({
+        message: "User with this Email or Username already exists",
+        success: false,
+      });
+    }
+
+    const user = await userModel.create({ username, email, password });
+
+    const emailVerificationToken = jwt.sign(
+      { email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    user.verifyToken = emailVerificationToken;
+    await user.save();
+
+    const verificationLink = `https://chatgpt-clone-jffg.onrender.com/verify-email?token=${emailVerificationToken}`;
+
+    // 🔥 EMAIL FIX (NON-BLOCKING + FALLBACK)
+    SendEmail({
+      to: email,
+      subject: "🚀 Verify Your Email - Welcome!",
+      html: `
     <div style="font-family: 'Segoe UI', sans-serif; background-color:#f4f6f8; padding:40px 20px;">
       
       <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:12px; padding:30px; box-shadow:0 8px 24px rgba(0,0,0,0.1); text-align:center;">
@@ -51,9 +80,27 @@ SendEmail({
       </div>
     </div>
   `
-}).catch(() => {
-  console.log("📌 Verification link:", verificationLink);
-});
+    }).catch(() => {
+      console.log("📌 Verification link:", verificationLink);
+    });
+
+    const userData = user.toObject();
+    delete userData.password;
+
+    return res.status(201).json({
+      message: "User registered successfully",
+      success: true,
+      user: userData,
+    });
+
+  } catch (error) {
+    console.log("REGISTER ERROR:", error);
+    return res.status(500).json({
+      message: "Register failed",
+      success: false,
+    });
+  }
+}
 
 // ================= LOGIN =================
 export async function login(req, res) {
