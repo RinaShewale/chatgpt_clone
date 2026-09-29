@@ -14,10 +14,9 @@ const mistralModel = new ChatMistralAI({
 });
 
 const geminiModel = new ChatGoogleGenerativeAI({
-    model: "gemini-2.5-flash",
+    model: "gemini-3.8-flash",
     apiKey: process.env.GEMINI_API_KEY,
 });
-
 
 // 3. Define the Search Tool
 const searchInternetTool = tool(
