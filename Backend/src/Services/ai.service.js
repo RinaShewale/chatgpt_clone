@@ -8,16 +8,16 @@ import { searchInternet } from "./internet.service.js";
 
 // 1. Initialize Mistral Model
 const mistralModel = new ChatMistralAI({
-    model: "mistral-large-latest",
+    model: "mistral-small-latest",
     apiKey: process.env.MISTRAL_API_KEY,
     temperature: 0
 });
 
-// 2. Initialize Gemini Model
 const geminiModel = new ChatGoogleGenerativeAI({
-    model: "gemini-1.5-flash",
+    model: "gemini-2.5-flash",
     apiKey: process.env.GEMINI_API_KEY,
 });
+
 
 // 3. Define the Search Tool
 const searchInternetTool = tool(
